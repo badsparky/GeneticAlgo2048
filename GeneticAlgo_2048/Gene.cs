@@ -58,10 +58,12 @@ class Gene
         for (int i = 0; i < weights.Length; i++)
         {
             weights[i] = min[i];
+            int tmp_count = 0;
             for (int j = 0; j < range[i]; j++)
             {
-                if(gene[j + tmp_0]) weights[i] += a;
+                if(gene[j + tmp_0]) tmp_count++;
             }
+            weights[i] = tmp_count*a;
             tmp_0 += range[i];
         }
     }

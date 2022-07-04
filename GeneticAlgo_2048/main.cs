@@ -21,7 +21,7 @@ public static class Program
     static bool ReadFromCsv=false;
     static string path_result = "WeightsValues.csv";
     static string path_Log = "WeightsValues_log.csv";
-    public static int degit = 1;
+    public static int degit = 1;//¬”“_ˆÈ‰ºŒ…”
 
     static List<double> list_smoothness = new List<double>() { };
     static List<double> list_monotonicity = new List<double>() { };
@@ -38,7 +38,7 @@ public static class Program
      };
 
     static(double min, double max) limit_smoothness = (1, 6.9);
-    static (double min, double max) limit_monotonicity = (-2.9, 3.0);
+    static (double min, double max) limit_monotonicity = (0, 3.0);
     static (double min, double max) limit_emptyCells = (0, 0);
     static (double min, double max) limit_maxValue = (0, 0);
 
@@ -59,7 +59,7 @@ public static class Program
 
     static void Initialize()
     {
-        counts = 2;//‰Šú¶¬ŒÂ”
+        counts = 10;//‰Šú¶¬ŒÂ”
         if (ReadFromCsv && File.Exists("./" + path_result))
         {
             return;
@@ -185,6 +185,7 @@ public static class Program
         times -= times%a;
         for (int i = 0; i <times/a ; i++)
         {
+            Progress.Refulesh_P();
             List<Task<int[]>> tasks = new List<Task<int[]>>();
             for (int j = 0; j < a; j++)
             {

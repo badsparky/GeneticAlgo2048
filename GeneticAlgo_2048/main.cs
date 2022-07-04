@@ -12,9 +12,9 @@ using System.Threading;
 public static class Program
 {
     static System.Timers.Timer timer=CreateTimer();
-    public static readonly int thread_max = 2;
+    public static readonly int thread_max = 10;
      
-    public static int times = 2;//10ˆÈã‚ÍA”–î‚É‚æ‚è10‚Ì”{”‚Ì‚İ
+    public static int times =20;//10ˆÈã‚ÍA”–î‚É‚æ‚è10‚Ì”{”‚Ì‚İ
         
     static Dictionary<string, Weight> weights;
     public static int counts;
@@ -59,7 +59,7 @@ public static class Program
 
     static void Initialize()
     {
-        counts = 10;//‰Šú¶¬ŒÂ”
+        counts = 15;//‰Šú¶¬ŒÂ”
         if (ReadFromCsv && File.Exists("./" + path_result))
         {
             return;
@@ -75,7 +75,7 @@ public static class Program
     public static void Main()
     {
         Initialize();
-        while (Score.Count > 1) Run();
+        while (Score.Count > 4) Run();
         openFile(path_result);
         openFile(path_Log);
     }

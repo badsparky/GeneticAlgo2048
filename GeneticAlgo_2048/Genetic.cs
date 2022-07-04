@@ -34,12 +34,11 @@ class Genetic
         for (int i = 0; i < 2; i++)
         {
             double randomV=rand.NextDouble();
-            int j;
-            for ( j = 0; j < counts&&randomV<0; j++)
+            for ( int j = 0; j < counts&&randomV>0; j++)
             {
                 randomV-=ratio[j];
+                result[i] = j;
             }
-            result[i] = j;
         }
         return result;
     }

@@ -75,7 +75,7 @@ public static class Program
     public static void Main()
     {
         Initialize();
-        while (Score.Count > 4) Run();
+        while (Score.Count > 5) Run();
         openFile(path_result);
         openFile(path_Log);
     }
@@ -215,7 +215,9 @@ public static class Program
         int count_success = log_score.Count(x => x == 2048);
         int sum_count_success=0;
         double accuracy = (double)count_success/times;
-        Score.Add(log_score.Average());
+
+        Score.Add(2500-log_score.Average());///////////
+
         using (FileStream fs = File.Create("./"+path_result));
         using (StreamWriter w=new StreamWriter("./"+path_result,true, Encoding.GetEncoding("Shift_JIS")))
         {

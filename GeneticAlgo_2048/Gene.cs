@@ -63,7 +63,7 @@ class Gene
             {
                 if(gene[j + tmp_0]) tmp_count++;
             }
-            weights[i] = tmp_count*a;
+            weights[i] = tmp_count * a + min[i];
             tmp_0 += range[i];
         }
     }

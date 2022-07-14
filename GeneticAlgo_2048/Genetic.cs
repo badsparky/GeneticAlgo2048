@@ -5,7 +5,7 @@ using System.Collections.Generic;
 class Genetic
 {
     Random rand ;
-    double  DecreaseBy = 0.8;
+    double  DecreaseBy =1;
     List<List<double>> WAndS;
     public List<Gene> list_gene;
     double[] ratio;
@@ -19,7 +19,9 @@ class Genetic
         counts = WAndS[0].Count;
 
         double sum=WAndS[WAndS.Count-1].Sum();
-        ratio = WAndS[WAndS.Count - 1].Select(x => x / sum).ToArray();
+        double max= WAndS[WAndS.Count - 1].Max();
+        ratio = WAndS[WAndS.Count - 1].Select(x => (max-x) / (counts*max-sum)).ToArray();
+        var tmp=ratio.Sum();
 
         for (int i = 0; i < counts; i++)
         {

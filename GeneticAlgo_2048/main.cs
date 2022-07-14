@@ -12,20 +12,23 @@ using System.Threading;
 public static class Program
 {
     static System.Timers.Timer timer=CreateTimer();
-    public static readonly int thread_max = 10;
-     
-    public static int times =20;//10以上は、諸事情により10の倍数のみ
+    public static readonly int thread_max = 10;//
+    public static int Generation = 12;//
+    public static bool generationMode = true;
+
+    public static int times =100;//10以上は、諸事情により10の倍数のみ
+    static int[] Sign = { 1, 1, 1, 1 };
         
     static Dictionary<string, Weight> weights;
     public static int counts;
-    static bool ReadFromCsv=false;
+    static bool ReadFromCsv=true;
     static string path_result = "WeightsValues.csv";
     static string path_Log = "WeightsValues_log.csv";
-    public static int degit = 1;//小数点以下桁数
+    public static int degit = 2;//小数点以下桁数
 
     static List<double> list_smoothness = new List<double>() { };
     static List<double> list_monotonicity = new List<double>() { };
-    static List<double> list_emptyCells = new List<double>() {0  };
+    static List<double> list_emptyCells = new List<double>() { 0 };
     static List<double> list_maxValue = new List<double>() { 0 };
     static List<double> Score=new List<double>();
     static List<List<double>> list_weights = new List<List<double>>
@@ -39,8 +42,8 @@ public static class Program
 
     static(double min, double max) limit_smoothness = (1, 6.9);
     static (double min, double max) limit_monotonicity = (0, 3.0);
-    static (double min, double max) limit_emptyCells = (0, 0);
-    static (double min, double max) limit_maxValue = (0, 0);
+    static (double min, double max) limit_emptyCells = (0, 5);
+    static (double min, double max) limit_maxValue = (0, 5);
 
     public static readonly double[] min = 
     { 
@@ -59,8 +62,10 @@ public static class Program
 
     static void Initialize()
     {
-        counts = 15;//初期生成個数
-        if (ReadFromCsv && File.Exists("./" + path_result))
+        counts = 10;//初期生成個数
+        Progress.Initialize(thread_max, counts, () => { timer.Stop(); }, () => { timer.Start(); });
+        Progress.Console_Write("Process Is OnGoing.....\n\n",2);
+        if (ReadFromCsv && File.Exists( path_result))
         {
             return;
         }
@@ -68,23 +73,28 @@ public static class Program
         {
             GenerateWeights();
             CalValues();
-            ReadFromCsv = true;
         }
         
     }
     public static void Main()
     {
+        timer.Start();
         Initialize();
-        while (Score.Count > 5) Run();
+        while ((!generationMode&& Score.Count > 1)||Generation>0) Run();
+        timer.Stop();
         openFile(path_result);
         openFile(path_Log);
+
     }
     static void Run()
     {
+        Progress.ClearConsole();
+        if (generationMode) Generation--;
         ReadData();
         Genetic genetic=new Genetic(list_weights);
         genetic.RunGenetic();
         foreach (var list in list_weights) list.Clear();
+        Progress.Refulesh_T();
         for (int i = 0; i < genetic.list_gene.Count; i++)
         {
             for (int j = 0; j < list_weights.Count-1; j++)
@@ -109,6 +119,19 @@ public static class Program
             var values = line.Split(',').Select(x=>double.Parse(x)).ToArray();
             for (int i = 0; i < list_weights.Count; i++) list_weights[i].Add(values[i]);
         }
+        Progress.Console_Write();
+        Progress.Console_Write("\n>Next Weights has read\n\n",3);
+        string[] list_name = { "smoothness", "monotonicity", "emptyCells", "maxValue","score" };
+        for (int i = 0; i < list_weights[0].Count; i++)
+        {
+            string tmp = "";
+            for (int j = 0; j < list_weights.Count; j++)
+            {
+                tmp += $"{list_name[j]}:{list_weights[j][i],5},";
+            }
+            Progress.Console_Write(tmp);
+
+        }
     }
 
     static void GenerateWeights()
@@ -122,26 +145,29 @@ public static class Program
             {"emptyCells", new Weight( limit_emptyCells, list_emptyCells, IsRandomFill ,2)},
             {"maxValue", new Weight( limit_maxValue, list_maxValue, IsRandomFill ,3)}
         };
+
+        Progress.Console_Write("\n>Next Weights has generated\n\n",3);
+        for (int i = 0; i < list_smoothness.Count; i++)
+        {
+            string tmp = "";
+            foreach (var key in weights.Keys) tmp += $"{key}:{weights[key][i],5},";
+            Progress.Console_Write(tmp);
+        }
+        Progress.Console_Write();
     }
 
 
 
     public static void CalValues()
     {
-        
-
-        Progress.Initialize(thread_max, counts);
-        timer.Start();
 
         for (int id = 0; id < counts; id++)
         {
-            Progress.Refulesh_P();
             Main_Last(id);
             Progress.Increace_TCount();
         }
 
         Progress.Show();
-        timer.Stop();
         using (StreamWriter w = new StreamWriter("./" + path_result, false, Encoding.GetEncoding("Shift_JIS")))
         {
             w.WriteLine ("smoothness,monotonicity,emptyCells,maxValue,Score");
@@ -164,10 +190,10 @@ public static class Program
 
     public static void Main_Last( int id)
     {
-        Evaluation2.smoothness = weights["smoothness"][id];
-        Evaluation2.monotonicity = weights["monotonicity"][id];
-        Evaluation2.emptyCells = weights["emptyCells"][id];
-        Evaluation2.maxValue = weights["maxValue"][id];
+        Evaluation2.smoothness = weights["smoothness"][id] * Sign[0];
+        Evaluation2.monotonicity = weights["monotonicity"][id] * Sign[1];
+        Evaluation2.emptyCells = weights["emptyCells"][id] * Sign[2];
+        Evaluation2.maxValue = weights["maxValue"][id] * Sign[3];
         //*********************
         Type type_solver = typeof(B22Solver);//()内変更
         //************************
@@ -185,7 +211,6 @@ public static class Program
         times -= times%a;
         for (int i = 0; i <times/a ; i++)
         {
-            Progress.Refulesh_P();
             List<Task<int[]>> tasks = new List<Task<int[]>>();
             for (int j = 0; j < a; j++)
             {
@@ -206,6 +231,7 @@ public static class Program
                 log_count[i*limit_a+j] = tasks[j].Result[1];
                 sum_count_total+=tasks[j].Result[1];
             }
+            Progress.Refulesh_P();
         }
         
 
@@ -216,7 +242,8 @@ public static class Program
         int sum_count_success=0;
         double accuracy = (double)count_success/times;
 
-        Score.Add(2500-log_score.Average());///////////
+        
+        Score.Add(log_score.Average());///////////
 
         using (FileStream fs = File.Create("./"+path_result));
         using (StreamWriter w=new StreamWriter("./"+path_result,true, Encoding.GetEncoding("Shift_JIS")))

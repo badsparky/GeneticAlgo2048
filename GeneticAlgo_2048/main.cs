@@ -89,7 +89,11 @@ public static class Program
     static void Run()
     {
         Progress.ClearConsole();
-        if (generationMode) Generation--;
+        if (generationMode)
+        {
+            Generation--;
+            if (Score.GroupBy(x => x).Where(g => g.Count() > 1).Count() > 0) Generation = 0;
+        }
         ReadData();
         Genetic genetic=new Genetic(list_weights);
         genetic.RunGenetic();
